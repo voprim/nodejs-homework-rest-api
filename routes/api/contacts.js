@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { listContacts, getContactById, addContact, removeContact, updateContact } = require("../../models/contacts.js");
-// const { RequestError } = require("../../helpers");
+const { listContacts, getById, addContact, removeContact, updateContact } = require("../../models/contacts.js");
 const { bodySchema } = require("../../models/validateContacts");
 
 const RequestError = (status, message) => {
@@ -23,7 +22,7 @@ router.get("/", async (req, res, next) => {
 router.get("/:contactId", async (req, res, next) => {
   try {
     const contactId = req.params.contactId;
-    const contactById = await getContactById(contactId);
+    const contactById = await getById(contactId);
     if (!contactById) {
       throw RequestError(404, "Not found");
     }
@@ -39,7 +38,7 @@ router.post("/", async (req, res, next) => {
     const body = req.body;
 
     if (validationResult.error) {
-      throw RequestError(404, "missing required name field");
+      throw RequestError(400, "missing required name field");
     }
 
     const newContact = await addContact(body);
