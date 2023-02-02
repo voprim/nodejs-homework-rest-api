@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-const bodySchema = Joi.object({
+const bodySchemaCreate = Joi.object({
   name: Joi.string().alphanum().min(3).required(),
 
   email: Joi.string()
@@ -10,6 +10,17 @@ const bodySchema = Joi.object({
   phone: Joi.string().required(),
 });
 
+const bodySchemaUpdate = Joi.object({
+  name: Joi.string().alphanum().min(3).required(),
+
+  email: Joi.string()
+    .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
+    .optional(),
+
+  phone: Joi.string().optional(),
+});
+
 module.exports = {
-  bodySchema,
+  bodySchemaCreate,
+  bodySchemaUpdate,
 };

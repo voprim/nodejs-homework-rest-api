@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { listContacts, getById, addContact, removeContact, updateContact } = require("../../models/contacts.js");
-const { bodySchema } = require("../../models/validateContacts");
+const { bodySchemaCreate, bodySchemaUpdate } = require("../../models/validateContacts");
 
 const RequestError = (status, message) => {
   const error = new Error(message);
@@ -34,7 +34,7 @@ router.get("/:contactId", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const validationResult = bodySchema.validate(req.body);
+    const validationResult = bodySchemaCreate.validate(req.body);
     const body = req.body;
 
     if (validationResult.error) {
@@ -66,7 +66,7 @@ router.delete("/:contactId", async (req, res, next) => {
 
 router.patch("/:contactId", async (req, res, next) => {
   try {
-    const validationResult = bodySchema.validate(req.body);
+    const validationResult = bodySchemaUpdate.validate(req.body);
 
     if (validationResult.error) {
       return res.status(400).json({ status: validationResult.error.details });
