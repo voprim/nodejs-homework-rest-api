@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { listContacts, getById, addContact, removeContact, updateContact } = require("../../models/contacts.js");
-const { bodySchemaCreate, bodySchemaUpdate } = require("../../models/validateContacts");
+const { bodySchemaCreate, bodySchemaUpdate, bodySchemaByFavorite } = require("../../models/validateContacts");
 
 const RequestError = (status, message) => {
   const error = new Error(message);
@@ -67,24 +67,50 @@ router.delete("/:contactId", async (req, res, next) => {
 router.patch("/:contactId", async (req, res, next) => {
   try {
     const validationResult = bodySchemaUpdate.validate(req.body);
-
     if (validationResult.error) {
       return res.status(400).json({ status: validationResult.error.details });
     }
-
     const contactId = req.params.contactId;
     const body = req.body;
-
     if (body === null) {
       throw RequestError(400, "Missing fields");
     }
-
     const contactUpdate = await updateContact(contactId, body);
     if (!contactUpdate) {
       throw RequestError(404, "Not found");
     }
-
     res.status(200).json(contactUpdate);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/:contactId/favorite", async (req, res, next) => {
+  try {
+    const validationResult = bodySchemaByFavorite.validate(req.body);
+    if (validationResult.error) {
+      return res.status(400).json({ status: validationResult.error.details });
+    }
+    const contact = await updateContact(req.params.contactId, req.body);
+    if (req.body === null) {
+      throw RequestError(400, "Missing field favorite");
+    }
+    if (contact) {
+      return res.json({
+        status: "Success",
+        code: 200,
+        message: "Contact has been updated",
+        data: {
+          contact,
+        },
+      });
+    } else {
+      return res.status(400).json({
+        status: "Error",
+        code: 404,
+        message: "Not found",
+      });
+    }
   } catch (error) {
     next(error);
   }
