@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { listContacts, getById, addContact, removeContact, updateContact } = require("../../models/contacts.js");
+const { listContacts, getById, addContact, removeContact, updateContact } = require("../../models/contactModel.js");
 const { bodySchemaCreate, bodySchemaUpdate, bodySchemaByFavorite } = require("../../models/validateContacts");
 
 const RequestError = (status, message) => {

@@ -5,7 +5,7 @@ const bodySchemaCreate = Joi.object({
   email: Joi.string()
     .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
     .required(),
-  phone: Joi.string().required(),
+  phone: Joi.string().optional(),
   favorite: Joi.boolean(),
 });
 

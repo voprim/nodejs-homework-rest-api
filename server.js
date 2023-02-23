@@ -6,11 +6,7 @@ const app = require("./app");
 const PORT = process.env.PORT || 8081;
 
 mongoose
-  .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    strictQuery: true,
-  })
+  .connect(process.env.MONGO_URL)
   .then(() => {
     app.listen(PORT);
     console.log("Database connection successful");
