@@ -40,7 +40,7 @@ const loginController = async (req, res, next) => {
     console.log(req.body);
     // const user = User.findByEmail(email);
     const user = await User.findOne({ email });
-    console.log(user.password);
+
     const isValidPassword = await bcrypt.compare(password, user.password); // await user.validPassword(password);
 
     if (!user || !isValidPassword) {
