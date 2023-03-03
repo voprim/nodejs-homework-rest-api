@@ -1,14 +1,14 @@
+require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 // const User = require("../models/userModel");
-const User = require("../db/userSchema");
-require("dotenv").config();
+const UserSchema = require("../db/userSchema");
 
 const registrationController = async (req, res, next) => {
   try {
     const { email } = req.body;
     // const user = await User.findByEmail(email);
-    const user = await User.findOne({ email });
+    const user = await UserSchema.findOne({ email });
 
     if (user) {
       return res.status(409).json({
@@ -19,7 +19,12 @@ const registrationController = async (req, res, next) => {
       });
     }
 
-    const newUser = await User.create(req.body);
+    const create = async function ({ name, email, password, subscription }) {
+      const userCreate = new UserSchema({ name, email, password, subscription });
+      return await userCreate.save();
+    };
+
+    const newUser = await create(req.body);
     return res.status(201).json({
       status: "Success",
       code: 201,
@@ -39,7 +44,7 @@ const loginController = async (req, res, next) => {
     const { email, password } = req.body;
     console.log(req.body);
     // const user = User.findByEmail(email);
-    const user = await User.findOne({ email });
+    const user = await UserSchema.findOne({ email });
 
     const isValidPassword = await bcrypt.compare(password, user.password); // await user.validPassword(password);
 
@@ -55,7 +60,7 @@ const loginController = async (req, res, next) => {
     const payload = { id };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "2h" });
     // await User.updateToken(id, token);
-    await User.findByIdAndUpdate(user._id, { token });
+    await UserSchema.findByIdAndUpdate(user._id, { token });
     // await User.updateOne( id , { token });
 
     return res.status(200).json({
@@ -79,7 +84,7 @@ const logoutController = async (req, res, next) => {
   // await User.updateToken(userId, null);
   try {
     const { _id: id } = req.user;
-    const user = await User.findById(id);
+    const user = await UserSchema.findById(id);
     if (!user) {
       return res.status(401).json({
         status: "Error",
@@ -89,7 +94,7 @@ const logoutController = async (req, res, next) => {
       });
     }
 
-    await User.findByIdAndUpdate(id, { token: "" });
+    await UserSchema.findByIdAndUpdate(id, { token: "" });
     res.status(204).json();
   } catch (error) {
     next(error);

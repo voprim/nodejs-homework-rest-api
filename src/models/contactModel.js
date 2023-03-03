@@ -1,45 +1,76 @@
 const Contact = require("../db/contactSchema");
 
-const listContacts = async (owner, page = 1, limit = 100, favorite) => {
-  const skip = (parseInt(page) - 1) * parseInt(limit);
+const listContacts = async ({ id, skip, limit, favorite }) => {
+  try {
+    if (skip || limit) {
+      const data = await Contact.find({ owner: id }, "", { skip, limit: Number(limit) }).populate(
+        "owner",
+        "_id username email"
+      );
+      return data;
+    }
 
-  if (favorite) {
-    const res = await Contact.find({ $and: [{ owner }, { favorite }] })
-      .skip(skip)
-      .limit(limit);
-    return res;
+    if (favorite) {
+      const data = await Contact.find({ favorite: favorite }).populate("owner", "_id username email");
+      return data;
+    }
+  } catch (error) {
+    console.log(error.message);
   }
-  const res = await Contact.find({ owner }).skip(skip).limit(limit);
-  return res;
 };
 
-const getById = async (contactId, owner) => {
-  const result = await Contact.find({ $and: [{ owner }, { _id: contactId }] });
-  return result;
+const getById = async (contactId) => {
+  try {
+    const data = await Contact.findById(contactId).populate("owner", "email subscription");
+
+    if (!data) {
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.log(error.message);
+  }
 };
 
-const addContact = async ({ name, email, phone }, owner) => {
-  const result = await Contact.create({ name, email, phone, owner });
-  await result.save();
-  return result;
+// const addContact = async ({ id, body }) => {
+//   try {
+//     const data = await Contact.create({ ...body, owner: id });
+//     return data;
+//   } catch (error) {
+//     console.log(error.message);
+//   }
+// };
+
+const addContact = async ({ name, email, phone, favorite }, owner) => {
+  const contact = new Contact({ name, email, phone, owner, favorite });
+  await contact.save();
+  return contact;
 };
 
-const removeContact = async (contactId, owner) => {
-  const result = await Contact.findByIdAndRemove({
-    $and: [{ owner }, { _id: contactId }],
-  });
-  return result;
+const removeContact = async (contactId) => {
+  try {
+    const data = await Contact.findByIdAndRemove(contactId);
+
+    if (!data) {
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.log(error.message);
+  }
 };
 
-const updateContact = async (contactId, { name, phone, email }, owner) => {
-  const result = await Contact.findByIdAndUpdate(
-    { $and: [{ owner }, { _id: contactId }] },
-    {
-      $set: { name, phone, email },
-    },
-    { new: true }
-  );
-  return result;
+const updateContact = async (contactId, body) => {
+  try {
+    const data = await Contact.findByIdAndUpdate(contactId, body, { new: true });
+
+    if (!data) {
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.log(error.message);
+  }
 };
 
 module.exports = {
