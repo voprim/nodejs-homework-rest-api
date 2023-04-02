@@ -1,35 +1,28 @@
 const jwt = require("jsonwebtoken");
+const createError = require("http-errors");
 
-const User = require("../models/userModel");
-const { JWT_SECRET } = process.env;
-
-const RequestError = (status, message) => {
-  const error = new Error(message);
-  error.status = status;
-  return error;
-};
+const { User } = require("../models/userShema");
 
 const authenticate = async (req, res, next) => {
   try {
-    const { authorization } = req.headers;
+    const { JWT_SECRET } = process.env;
+    const { authorization = "" } = req.headers;
     const [bearer, token] = authorization.split(" ");
-    if (bearer !== "Bearer") {
-      throw RequestError(401, "Not authorized");
+    if (bearer !== "Bearer" || !token) {
+      throw createError(401, `Not authorized`);
+    }
+    const { id } = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(id);
+
+    if (!user || !user.token) {
+      throw createError(401, `Not authorized`);
     }
 
-    try {
-      const { id } = jwt.verify(token, JWT_SECRET);
-      const user = await User.findById(id);
-      if (!user || !token) {
-        throw RequestError(401, "Not authorized");
-      }
-
-      req.user = user;
-      next();
-    } catch (error) {
-      throw RequestError(401, error.message);
-    }
+    req.user = user;
+    next();
   } catch (error) {
+    error.message = `Not authorized`;
+    error.status = 401;
     next(error);
   }
 };

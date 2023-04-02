@@ -2,17 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 const authenticate = require("../../middlewares/authenticate");
+const { users: ctrls } = require("../../controllers");
 
-const {
-  registrationController,
-  loginController,
-  logoutController,
-  currentUserController,
-} = require("../../controllers/usersController");
-
-router.post("/signup", registrationController);
-router.post("/login", loginController);
-router.get("/logout", authenticate, logoutController);
-router.get("/current", authenticate, currentUserController);
+router.get("/current", authenticate, ctrls.getCurrent);
+router.patch("/", authenticate, ctrls.updateStatus);
 
 module.exports = router;
