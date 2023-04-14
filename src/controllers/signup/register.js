@@ -1,6 +1,7 @@
 const { User } = require("../../models/userShema");
 const createError = require("http-errors");
 const bcrypt = require("bcryptjs");
+const gravatar = require("gravatar");
 
 const register = async (req, res, next) => {
   try {
@@ -12,11 +13,15 @@ const register = async (req, res, next) => {
     }
 
     const hashPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
-    const addUser = await User.create({ email, password: hashPassword });
+
+    const avatarURL = gravatar.url(email);
+
+    const addUser = await User.create({ email, password: hashPassword, avatarURL });
     res.status(201).json({
       user: {
         email: addUser.email,
         subscription: addUser.subscription,
+        avatar: addUser.avatarURL,
       },
     });
   } catch (error) {

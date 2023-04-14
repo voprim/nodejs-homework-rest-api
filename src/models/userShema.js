@@ -20,6 +20,10 @@ const userShema = Schema({
     type: String,
     default: null,
   },
+  avatarURL: {
+    type: String,
+    required: true,
+  },
 });
 
 const User = model("user", userShema);
