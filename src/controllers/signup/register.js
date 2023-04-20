@@ -2,6 +2,8 @@ const { User } = require("../../models/userShema");
 const createError = require("http-errors");
 const bcrypt = require("bcryptjs");
 const gravatar = require("gravatar");
+const { nanoid } = require("nanoid");
+const { sendEmail } = require("../../helpers");
 
 const register = async (req, res, next) => {
   try {
@@ -16,12 +18,24 @@ const register = async (req, res, next) => {
 
     const avatarURL = gravatar.url(email);
 
-    const addUser = await User.create({ email, password: hashPassword, avatarURL });
+    const verificationToken = nanoid();
+
+    const addUser = await User.create({ email, password: hashPassword, verificationToken, avatarURL });
+
+    const mail = {
+      to: email,
+      subject: "Confirm email",
+      text: `<a target="_blank" href="http://localhost:3000/api/users/verify/${verificationToken}">Confirm email</a>`,
+    };
+
+    await sendEmail(mail);
+
     res.status(201).json({
       user: {
         email: addUser.email,
         subscription: addUser.subscription,
         avatar: addUser.avatarURL,
+        verificationToken: addUser.verificationToken,
       },
     });
   } catch (error) {
